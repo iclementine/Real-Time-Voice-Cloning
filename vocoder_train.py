@@ -5,6 +5,7 @@ import argparse
 
 
 if __name__ == "__main__":
+    # 这个确实很详细，可以用自己合成的频谱训练，也可以用 groundtruth 频谱训练，不过这是一个 wavenet
     parser = argparse.ArgumentParser(
         description="Trains the vocoder from the synthesizer audios and the GTA synthesized mels, "
                     "or ground truth mels.",

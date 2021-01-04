@@ -7,8 +7,10 @@ from vocoder.audio import *
 
 
 class ResBlock(nn.Module):
+    # Linear + bn + relu + Linear + bn
     def __init__(self, dims):
         super().__init__()
+        # torch 的邪恶之处， conv 1 纯粹就是一个特征变换，就弄成了酱紫
         self.conv1 = nn.Conv1d(dims, dims, kernel_size=1, bias=False)
         self.conv2 = nn.Conv1d(dims, dims, kernel_size=1, bias=False)
         self.batch_norm1 = nn.BatchNorm1d(dims)
@@ -76,13 +78,15 @@ class UpsampleNetwork(nn.Module):
             self.up_layers.append(conv)
 
     def forward(self, m):
+        # auxiliary 的上采样是直接擴展的
         aux = self.resnet(m).unsqueeze(1)
         aux = self.resnet_stretch(aux)
         aux = aux.squeeze(1)
+        # 而正常的那个是一步一步上采样的， 为什么要有两个上采样网络呢？
         m = m.unsqueeze(1)
         for f in self.up_layers: m = f(m)
         m = m.squeeze(1)[:, :, self.indent:-self.indent]
-        return m.transpose(1, 2), aux.transpose(1, 2)
+        return m.transpose(1, 2), aux.transpose(1, 2) #(BCT)
 
 
 class WaveRNN(nn.Module):
@@ -118,6 +122,7 @@ class WaveRNN(nn.Module):
     def forward(self, x, mels):
         self.step += 1
         bsize = x.size(0)
+        # 大家還真的就是這麼寫模型的誒
         if torch.cuda.is_available():
             h1 = torch.zeros(1, bsize, self.rnn_dims).cuda()
             h2 = torch.zeros(1, bsize, self.rnn_dims).cuda()
@@ -125,13 +130,15 @@ class WaveRNN(nn.Module):
             h1 = torch.zeros(1, bsize, self.rnn_dims).cpu()
             h2 = torch.zeros(1, bsize, self.rnn_dims).cpu()
         mels, aux = self.upsample(mels)
-
+        
+        # channel 切分, auxiliary 信息多次融合進入
         aux_idx = [self.aux_dims * i for i in range(5)]
         a1 = aux[:, :, aux_idx[0]:aux_idx[1]]
         a2 = aux[:, :, aux_idx[1]:aux_idx[2]]
         a3 = aux[:, :, aux_idx[2]:aux_idx[3]]
         a4 = aux[:, :, aux_idx[3]:aux_idx[4]]
-
+        
+        # B, T, C
         x = torch.cat([x.unsqueeze(-1), mels, a1], dim=2)
         x = self.I(x)
         res = x
