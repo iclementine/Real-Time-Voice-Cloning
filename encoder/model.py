@@ -1,5 +1,6 @@
 from encoder.params_model import *
 from encoder.params_data import *
+# 通过这种方式去除了层次性，其实也是不错的
 from scipy.interpolate import interp1d
 from sklearn.metrics import roc_curve
 from torch.nn.utils import clip_grad_norm_
@@ -10,6 +11,8 @@ import torch
 
 
 class SpeakerEncoder(nn.Module):
+    # 实在是有点丑陋， 虽然这是一个 model parallel 的模型，但是把设备作为参数还是有点丑陋啊
+    # 而且所有的形状相关的东西竟然都不在这里面， 而是弄成了 hparams
     def __init__(self, device, loss_device):
         super().__init__()
         self.loss_device = loss_device
