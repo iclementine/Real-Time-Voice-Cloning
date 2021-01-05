@@ -5,6 +5,7 @@ class Utterance:
     def __init__(self, frames_fpath, wave_fpath):
         self.frames_fpath = frames_fpath
         self.wave_fpath = wave_fpath
+        # 全部都是 lazy loading 处理
         
     def get_frames(self):
         return np.load(self.frames_fpath)
@@ -17,7 +18,7 @@ class Utterance:
         :return: the partial utterance frames and a tuple indicating the start and end of the 
         partial utterance in the complete utterance.
         """
-        frames = self.get_frames()
+        frames = self.get_frames() # (T, C)
         if frames.shape[0] == n_frames:
             start = 0
         else:

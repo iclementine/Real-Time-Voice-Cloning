@@ -16,6 +16,9 @@ class RandomCycler:
         self.next_items = []
     
     def sample(self, count: int):
+        # count 是需要采样的个数
+        # 其实貌似就是一个可以不断继续使用的 random sampler 而已
+        # 不过不等于有放回抽象的 sampler 
         shuffle = lambda l: random.sample(l, len(l))
         
         out = []

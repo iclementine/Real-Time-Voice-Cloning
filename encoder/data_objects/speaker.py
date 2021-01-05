@@ -30,11 +30,13 @@ class Speaker:
         frames are the frames of the partial utterances and range is the range of the partial 
         utterance with regard to the complete utterance.
         """
+        # 从 speaker 数据集中采样 count 个句子，裁切到 n_frames
         if self.utterances is None:
             self._load_utterances()
 
-        utterances = self.utterance_cycler.sample(count)
+        utterances = self.utterance_cycler.sample(count) # 采样多个 utterance
 
-        a = [(u,) + u.random_partial(n_frames) for u in utterances]
+        # Utterance.random_partial 的时候才真正加载数据
+        a = [(u,) + u.random_partial(n_frames) for u in utterances] 
 
         return a
