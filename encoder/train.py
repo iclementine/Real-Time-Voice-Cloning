@@ -1,6 +1,7 @@
 from encoder.visualizations import Visualizations
 from encoder.data_objects import SpeakerVerificationDataLoader, SpeakerVerificationDataset
 from encoder.params_model import *
+from encoder.params_data import *
 from encoder.model import SpeakerEncoder
 from utils.profiler import Profiler
 from pathlib import Path
@@ -16,7 +17,7 @@ def train(run_id: str, clean_data_root: Path, models_dir: Path, umap_every: int,
           backup_every: int, vis_every: int, force_restart: bool, visdom_server: str,
           no_visdom: bool):
     # Create a dataset and a dataloader
-    dataset = SpeakerVerificationDataset(clean_data_root)
+    dataset = SpeakerVerificationDataset(clean_data_root, utterances_per_speaker, partials_n_frames)
     loader = SpeakerVerificationDataLoader(
         dataset,
         speakers_per_batch,
@@ -68,15 +69,15 @@ def train(run_id: str, clean_data_root: Path, models_dir: Path, umap_every: int,
         profiler.tick("Blocking, waiting for batch (threaded)")
         
         # Forward pass
-        inputs = torch.from_numpy(speaker_batch.data).to(device)
+        inputs = torch.from_numpy(speaker_batch).to(device)
         sync(device)
         profiler.tick("Data to %s" % device)
         embeds = model(inputs)
         sync(device)
         profiler.tick("Forward pass")
-        embeds_loss = embeds.view((speakers_per_batch, utterances_per_speaker, -1)).to(loss_device)
+        embeds_loss = embeds.view((speakers_per_batch, utterances_per_speaker, -1)).to(device)
         loss, eer = model.loss(embeds_loss)
-        sync(loss_device)
+        sync(device)
         profiler.tick("Loss")
 
         # Backward pass

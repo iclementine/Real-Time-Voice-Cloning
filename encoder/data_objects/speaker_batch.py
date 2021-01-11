@@ -11,3 +11,7 @@ class SpeakerBatch:
         # Array of shape (n_speakers * n_utterances, n_frames, mel_n), e.g. for 3 speakers with
         # 4 utterances each of 160 frames of 40 mel coefficients: (12, 160, 40)
         self.data = np.array([frames for s in speakers for _, frames, _ in self.partials[s]])
+
+def collate_partials(list_of_partials):
+    batch = np.array([frames for partials in list_of_partials for (_, frames, _) in partials])
+    return batch
