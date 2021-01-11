@@ -11,6 +11,6 @@ sounddevice
 SoundFile
 Unidecode
 inflect
-PyQt5
+#PyQt5
 multiprocess
 numba
